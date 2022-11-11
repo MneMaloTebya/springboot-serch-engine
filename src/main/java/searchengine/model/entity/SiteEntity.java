@@ -9,7 +9,7 @@ import java.util.List;
 @Entity
 @Table(name = "site")
 @Data
-public class Site {
+public class SiteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,5 +32,5 @@ public class Site {
     private String name;
 
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL)
-    private List<Page> pages;
+    private List<PageEntity> pages;
 }

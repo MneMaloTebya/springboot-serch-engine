@@ -6,7 +6,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "page")
 @Data
-public class Page {
+public class PageEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,7 +14,7 @@ public class Page {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "site_id", nullable = false)
-    private Site site;
+    private SiteEntity site;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String path;
