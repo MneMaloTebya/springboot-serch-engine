@@ -1,4 +1,4 @@
-package searchengine.parser;
+package searchengine.services;
 
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
@@ -7,12 +7,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import searchengine.model.PageRepository;
+import searchengine.config.Site;
+import searchengine.config.SitesList;
 import searchengine.model.entity.PageEntity;
 import searchengine.model.entity.SiteEntity;
-import searchengine.services.SiteService;
+import searchengine.model.entity.StatusType;
 
 import java.io.IOException;
 import java.util.*;
@@ -20,13 +20,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-public class PageParser {
+public class PageParserServiceImpl implements PageParserService {
 
     @Autowired
-    private PageRepository pageRepository;
+    private PageService pageService;
 
     @Autowired
     private SiteService siteService;
+
+    @Autowired
+    private SitesList sitesList;
 
     private final List<String> STOP_WORDS = Arrays
             .asList("vk", "pdf", "twitter", "facebook", "instagram", "utm", "JPG",
@@ -35,11 +38,31 @@ public class PageParser {
 
     private final Object object = new Object();
 
-    public Set<String> parsing(String currentUrl) throws InterruptedException {
+    @Override
+    public void startIndexing() throws InterruptedException {
+        List<Site> sites = sitesList.getSites();
+        /**
+         * было:
+         * Optional<SiteEntity> optional = siteService.findByUrl(site.getUrl);
+         * if(optional.isPresent() {
+         *      siteService.deleteByUrl(site.getUrl());
+         *      и дальше сохранял сайти и парсил
+         * {
+         */
+        siteService.deleteAll();
+        for (Site site : sites) {
+            SiteEntity siteEntity = siteService.save(site, StatusType.INDEXING);
+            parsing(siteEntity);
+            siteService.changeStatus(siteEntity, StatusType.INDEXED);
+        }
+    }
+
+    @Override
+    public Set<String> parsing(SiteEntity siteEntity) throws InterruptedException {
         Thread.sleep(500);
         Set<String> urlSet = new HashSet<>();
         try {
-            var response = PageParser.getResponse(currentUrl);
+            var response = PageParserServiceImpl.getResponse(siteEntity.getUrl());
             Document document = response.parse();
             String content = document.outerHtml();
             int statusCode = response.statusCode();
@@ -50,10 +73,11 @@ public class PageParser {
                 boolean condition2 = (url.contains(document.location()));
                 boolean condition3 = STOP_WORDS.stream().noneMatch(url::contains);
                 if (condition1 && condition3) {
-                    addInsertPageToDB(urlSet, url, statusCode, content);
+                    addInsertPageToDB(urlSet, url, statusCode, content, siteEntity);
                 }
                 if (condition2 && condition3) {
-                    addInsertPageToDB(urlSet, url, statusCode, content);
+                    url = getDesiredGroupOfURL(url, 5);
+                    addInsertPageToDB(urlSet, url, statusCode, content, siteEntity);
                 }
             }
         } catch (HttpStatusException e) {
@@ -64,18 +88,17 @@ public class PageParser {
         return urlSet;
     }
 
-    private void addInsertPageToDB(Set<String> urlSet, String url, int code, String content) {
-
-
-        PageEntity page = new PageEntity();
+    private void addInsertPageToDB(Set<String> urls, String url, int code, String content, SiteEntity siteEntity) {
         synchronized (object) {
-            if (!pageRepository.findPageByPath(url)) {
-                urlSet.add(url);
-                // TODO: 10.11.2022 обрезать урл в путь
+            Optional<PageEntity> optional = pageService.findByPath(url);
+            if (optional.isEmpty()) {
+                PageEntity page = new PageEntity();
+                urls.add(url);
                 page.setPath(url);
                 page.setCode(code);
                 page.setContent(content);
-                pageRepository.save(page);
+                page.setSite(siteEntity);
+                pageService.save(page);
             }
         }
     }
@@ -89,22 +112,21 @@ public class PageParser {
         return response;
     }
 
-
-    public String getDesiredGroupOfURL(String url, int group) {
+    private String getDesiredGroupOfURL(String url, int group) {
         Pattern pattern = Pattern.compile("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
-        String desiredGroup = null;
+        String desiredGroup = "";
         Matcher matcher = pattern.matcher(url);
         if (matcher.find()) {
             switch (group) {
-                case 1: desiredGroup = matcher.group(1);
+                case 1: desiredGroup = matcher.group(1); //https:
                     break;
-                case 2 : desiredGroup = matcher.group(2);
+                case 2 : desiredGroup = matcher.group(2);//https
                     break;
-                case 3 : desiredGroup = matcher.group(3);
+                case 3 : desiredGroup = matcher.group(3);// //siteName.ru
                     break;
-                case 4 : desiredGroup = matcher.group(4);
+                case 4 : desiredGroup = matcher.group(4);// siteName.ru
                     break;
-                case 5 : desiredGroup = matcher.group(5);
+                case 5 : desiredGroup = matcher.group(5);// /page1/next-page/...
                     break;
             }
         }

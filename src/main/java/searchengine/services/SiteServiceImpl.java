@@ -13,41 +13,40 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class SiteServiceImpl implements SiteService{
+public class SiteServiceImpl implements SiteService {
 
     @Autowired
     private SiteRepository siteRepository;
 
-    @Autowired
-    private SitesList sitesList;
+    @Override
+    public void deleteByUrl(String url) {
+        siteRepository.deleteByUrl(url);
+    }
 
     @Override
-    public void deleteAllSites() {
+    public void deleteAll() {
         siteRepository.deleteAll();
     }
 
     @Override
-    public SiteEntity parseSiteInConfig() {
-        List<Site> sites = sitesList.getSites();
+    public Optional<SiteEntity> findByUrl(String url) {
+        return siteRepository.findByUrl(url);
+    }
+
+    @Override
+    public SiteEntity save(Site site, StatusType type) {
         SiteEntity siteEntity = new SiteEntity();
-        for (int i = 0; i <sites.size(); i++) {
-            siteEntity.setName(sites.get(i).getName());
-            siteEntity.setUrl(sites.get(i).getUrl());
-            siteEntity.setStatusTime(LocalDateTime.now());
-            siteEntity.setPages(null);
-            siteEntity.setStatusType(StatusType.INDEXED);
-            siteRepository.save(siteEntity);
-        }
+        siteEntity.setName(site.getName());
+        siteEntity.setUrl(site.getUrl());
+        siteEntity.setStatusType(type);
+        siteEntity.setStatusTime(LocalDateTime.now());
+        siteRepository.save(siteEntity);
         return siteEntity;
     }
 
     @Override
-    public SiteEntity findSiteByUrl(String url) {
-        SiteEntity siteEntity = null;
-        Optional<SiteEntity> optional = siteRepository.findSiteEntityByUrl(url);
-        if (optional.isPresent()) {
-            siteEntity = optional.get();
-        }
-        return siteEntity;
+    public SiteEntity changeStatus(SiteEntity siteEntity, StatusType type) {
+        siteEntity.setStatusType(type);
+        return siteRepository.save(siteEntity);
     }
 }

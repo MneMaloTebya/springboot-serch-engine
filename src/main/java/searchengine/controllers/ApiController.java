@@ -6,8 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import searchengine.dto.statistics.StatisticsResponse;
-import searchengine.services.PageService;
-import searchengine.services.SiteService;
+import searchengine.services.PageParserService;
 import searchengine.services.StatisticsService;
 
 import java.util.HashMap;
@@ -21,10 +20,7 @@ public class ApiController {
     private StatisticsService statisticsService;
 
     @Autowired
-    private PageService pageService;
-
-    @Autowired
-    private SiteService siteService;
+    private PageParserService pageParserService;
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
@@ -34,20 +30,11 @@ public class ApiController {
     @GetMapping("/startIndexing")
     public Map<String, String> startIndexing() {
         Map<String, String> response = new HashMap<>();
-        pageService.deleteAllPages();
-        siteService.deleteAllSites();
-        siteService.parseSiteInConfig();
-
-
-
+        try {
+            pageParserService.startIndexing();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return response;
     }
-
 }
-/**
- * 0) очищаю все таблицы.
- * 1) парсю урлы, имена страниц. добавляю дату, статус и пустой лист из страниц. сохраняю. Для этого,
- * создам отдельный сервис SiteService.
- * 2) дальше начинаю парсить страницы отдельного сайта.
- * 3) беру дефолтный урл. передаю его в параметры форкджоина.
- */
