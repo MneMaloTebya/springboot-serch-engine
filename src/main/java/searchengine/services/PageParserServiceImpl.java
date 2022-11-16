@@ -15,6 +15,7 @@ import searchengine.model.entity.SiteEntity;
 import searchengine.model.entity.StatusType;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,8 +82,12 @@ public class PageParserServiceImpl implements PageParserService {
                 }
             }
         } catch (HttpStatusException e) {
+            siteService.changeStatus(siteEntity, StatusType.FAILED);
+            siteService.updateLastError(siteEntity, e.getMessage());
             return Collections.EMPTY_SET;
         } catch (IOException e) {
+            siteService.changeStatus(siteEntity, StatusType.FAILED);
+            siteService.updateLastError(siteEntity, e.getMessage());
             throw new RuntimeException();
         }
         return urlSet;
@@ -99,6 +104,7 @@ public class PageParserServiceImpl implements PageParserService {
                 page.setContent(content);
                 page.setSite(siteEntity);
                 pageService.save(page);
+                siteService.updateTime(siteEntity);
             }
         }
     }

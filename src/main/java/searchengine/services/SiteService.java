@@ -17,4 +17,8 @@ public interface SiteService {
     SiteEntity save(Site site, StatusType type);
 
     SiteEntity changeStatus(SiteEntity siteEntity, StatusType type);
+
+    SiteEntity updateTime(SiteEntity siteEntity);
+
+    SiteEntity updateLastError(SiteEntity siteEntity, String message);
 }

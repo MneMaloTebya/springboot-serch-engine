@@ -49,4 +49,16 @@ public class SiteServiceImpl implements SiteService {
         siteEntity.setStatusType(type);
         return siteRepository.save(siteEntity);
     }
+
+    @Override
+    public SiteEntity updateTime(SiteEntity siteEntity) {
+        siteEntity.setStatusTime(LocalDateTime.now());
+        return siteRepository.save(siteEntity);
+    }
+
+    @Override
+    public SiteEntity updateLastError(SiteEntity siteEntity, String message) {
+        siteEntity.setLastError(message);
+        return siteRepository.save(siteEntity);
+    }
 }
