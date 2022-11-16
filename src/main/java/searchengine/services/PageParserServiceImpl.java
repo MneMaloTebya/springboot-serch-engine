@@ -29,8 +29,8 @@ public class PageParserServiceImpl implements PageParserService {
     @Autowired
     private SiteService siteService;
 
-    @Autowired
-    private SitesList sitesList;
+//    @Autowired
+//    private SitesList sitesList;
 
     private final List<String> STOP_WORDS = Arrays
             .asList("vk", "pdf", "twitter", "facebook", "instagram", "utm", "JPG",
@@ -39,24 +39,25 @@ public class PageParserServiceImpl implements PageParserService {
 
     private final Object object = new Object();
 
-    @Override
-    public void startIndexing() throws InterruptedException {
-        List<Site> sites = sitesList.getSites();
-        /**
-         * было:
-         * Optional<SiteEntity> optional = siteService.findByUrl(site.getUrl);
-         * if(optional.isPresent() {
-         *      siteService.deleteByUrl(site.getUrl());
-         *      и дальше сохранял сайти и парсил
-         * {
-         */
-        siteService.deleteAll();
-        for (Site site : sites) {
-            SiteEntity siteEntity = siteService.save(site, StatusType.INDEXING);
-            parsing(siteEntity);
-            siteService.changeStatus(siteEntity, StatusType.INDEXED);
-        }
-    }
+//    // TODO: 16.11.2022 тестовый метод. потом удалить
+//    @Override
+//    public void startIndexing() throws InterruptedException {
+//        List<Site> sites = sitesList.getSites();
+//        /**
+//         * было:
+//         * Optional<SiteEntity> optional = siteService.findByUrl(site.getUrl);
+//         * if(optional.isPresent() {
+//         *      siteService.deleteByUrl(site.getUrl());
+//         *      и дальше сохранял сайти и парсил
+//         * {
+//         */
+//        siteService.deleteAll();
+//        for (Site site : sites) {
+//            SiteEntity siteEntity = siteService.save(site, StatusType.INDEXING);
+//            parsing(siteEntity);
+//            siteService.changeStatus(siteEntity, StatusType.INDEXED);
+//        }
+//    }
 
     @Override
     public Set<String> parsing(SiteEntity siteEntity) throws InterruptedException {
