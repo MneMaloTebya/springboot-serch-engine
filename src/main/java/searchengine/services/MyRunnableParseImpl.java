@@ -1,24 +1,21 @@
 package searchengine.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import searchengine.model.entity.SiteEntity;
 
 import java.util.concurrent.ForkJoinPool;
 
-@Service
 public class MyRunnableParseImpl implements Runnable {
 
-    @Autowired
     private PageParserService pageParserService;
-
-    @Autowired
     private RecursivePageParserServiceImpl recursivePageParserService;
+    private PageService pageService;
 
+    public MyRunnableParseImpl(PageParserService pageParserService, SiteEntity siteEntity, PageService pageService) {
+        this.pageParserService = pageParserService;
+        this.pageService = pageService;
 
-    public MyRunnableParseImpl(SiteEntity siteEntity) {
         try {
-            recursivePageParserService = new RecursivePageParserServiceImpl(pageParserService.parsing(siteEntity));
+            recursivePageParserService = new RecursivePageParserServiceImpl(pageParserService, pageService, pageParserService.parsing(siteEntity), siteEntity);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

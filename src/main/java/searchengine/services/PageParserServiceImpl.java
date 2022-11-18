@@ -60,9 +60,9 @@ public class PageParserServiceImpl implements PageParserService {
 //    }
 
     @Override
-    public Set<String> parsing(SiteEntity siteEntity) throws InterruptedException {
+    public Set<PageEntity> parsing(SiteEntity siteEntity) throws InterruptedException {
         Thread.sleep(500);
-        Set<String> urlSet = new HashSet<>();
+        Set<PageEntity> pageEntities = new HashSet<>();
         try {
             var response = PageParserServiceImpl.getResponse(siteEntity.getUrl());
             Document document = response.parse();
@@ -75,11 +75,11 @@ public class PageParserServiceImpl implements PageParserService {
                 boolean condition2 = (url.contains(document.location()));
                 boolean condition3 = STOP_WORDS.stream().noneMatch(url::contains);
                 if (condition1 && condition3) {
-                    addInsertPageToDB(urlSet, url, statusCode, content, siteEntity);
+                    addInsertPageToDB(pageEntities, url, statusCode, content, siteEntity);
                 }
                 if (condition2 && condition3) {
                     url = getDesiredGroupOfURL(url, 5);
-                    addInsertPageToDB(urlSet, url, statusCode, content, siteEntity);
+                    addInsertPageToDB(pageEntities, url, statusCode, content, siteEntity);
                 }
             }
         } catch (HttpStatusException e) {
@@ -91,19 +91,19 @@ public class PageParserServiceImpl implements PageParserService {
             siteService.updateLastError(siteEntity, e.getMessage());
             throw new RuntimeException();
         }
-        return urlSet;
+        return pageEntities;
     }
 
-    private void addInsertPageToDB(Set<String> urls, String url, int code, String content, SiteEntity siteEntity) {
+    private void addInsertPageToDB(Set<PageEntity> pageEntities, String url, int code, String content, SiteEntity siteEntity) {
         synchronized (object) {
             Optional<PageEntity> optional = pageService.findByPath(url);
             if (optional.isEmpty()) {
                 PageEntity page = new PageEntity();
-                urls.add(url);
                 page.setPath(url);
                 page.setCode(code);
                 page.setContent(content);
                 page.setSite(siteEntity);
+                pageEntities.add(page);
                 pageService.save(page);
                 siteService.updateTime(siteEntity);
             }

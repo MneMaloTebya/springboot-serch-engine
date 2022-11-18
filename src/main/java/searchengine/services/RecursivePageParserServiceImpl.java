@@ -1,39 +1,39 @@
 package searchengine.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import searchengine.model.entity.PageEntity;
 import searchengine.model.entity.SiteEntity;
 
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
-@Service
-public class RecursivePageParserServiceImpl extends RecursiveTask<Set<String>> implements RecursivePageParserService {
+public class RecursivePageParserServiceImpl extends RecursiveTask<Set<PageEntity>> implements RecursivePageParserService {
 
-    private Set<String> urlsSet;
-
-    @Autowired
     private PageParserService pageParserService;
 
-    @Autowired
-    private SiteService siteService;
+    private PageService pageService;
 
-    @Autowired
-    public RecursivePageParserServiceImpl(Set<String> urlsSet) {
-        this.urlsSet = urlsSet;
+    private SiteEntity siteEntity;
+
+    private Set<PageEntity> pageEntities;
+
+    public RecursivePageParserServiceImpl(PageParserService pageParserService, PageService pageService, Set<PageEntity> pageEntities, SiteEntity siteEntity) {
+        this.pageParserService = pageParserService;
+        this.pageService = pageService;
+        this.siteEntity = siteEntity;
+        this.pageEntities = pageEntities;
     }
 
     @Override
-    public Set<String> compute() {
-        Set<String> urls = new HashSet<>();
+    public Set<PageEntity> compute() {
+        Set<PageEntity> entities = new HashSet<>();
         try {
             List<RecursivePageParserServiceImpl> tasks = new ArrayList<>();
-            for (String url : urls) {
-                Optional<SiteEntity> optional = siteService.findByUrl(url);
+            for (PageEntity entity : entities) {
+                Optional<PageEntity> optional = pageService.findByPath(entity.getPath());
                 if (optional.isPresent()) {
-                    SiteEntity siteEntity = optional.get();
+                    PageEntity pageEntity = optional.get();
                     RecursivePageParserServiceImpl task =
-                            new RecursivePageParserServiceImpl(pageParserService.parsing(siteEntity));
+                            new RecursivePageParserServiceImpl(pageParserService, pageService, pageParserService.parsing(siteEntity), siteEntity);
                     task.fork();
                     tasks.add(task);
                 }
@@ -41,6 +41,6 @@ public class RecursivePageParserServiceImpl extends RecursiveTask<Set<String>> i
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return urls;
+        return entities;
     }
 }

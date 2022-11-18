@@ -18,12 +18,18 @@ public class StarterIndexingImpl implements StartIndexing {
     @Autowired
     private SiteService siteService;
 
+    @Autowired
+    private PageService pageService;
+
+    @Autowired
+    private PageParserService pageParserService;
+
     @Override
     public void startIndexing() {
         List<Site> sites = sitesList.getSites();
         for (Site site : sites) {
             SiteEntity siteEntity = siteService.save(site, StatusType.INDEXING);
-            Thread thread = new Thread(new MyRunnableParseImpl(siteEntity));
+            Thread thread = new Thread(new MyRunnableParseImpl(pageParserService, siteEntity, pageService));
             thread.start();
             siteService.changeStatus(siteEntity, StatusType.INDEXED);
         }
