@@ -1,4 +1,4 @@
-package searchengine.services;
+package searchengine.services.site;
 
 import searchengine.config.Site;
 import searchengine.model.entity.SiteEntity;

@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import searchengine.dto.statistics.StatisticsResponse;
-import searchengine.services.PageParserService;
 import searchengine.services.StartIndexing;
 import searchengine.services.StatisticsService;
 

@@ -1,15 +1,13 @@
-package searchengine.services;
+package searchengine.services.site;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import searchengine.config.Site;
-import searchengine.config.SitesList;
 import searchengine.model.SiteRepository;
 import searchengine.model.entity.SiteEntity;
 import searchengine.model.entity.StatusType;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service

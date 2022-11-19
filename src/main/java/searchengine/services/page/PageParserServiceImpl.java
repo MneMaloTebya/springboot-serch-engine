@@ -1,4 +1,4 @@
-package searchengine.services;
+package searchengine.services.page;
 
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
@@ -8,14 +8,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import searchengine.config.Site;
-import searchengine.config.SitesList;
 import searchengine.model.entity.PageEntity;
 import searchengine.model.entity.SiteEntity;
 import searchengine.model.entity.StatusType;
+import searchengine.services.site.SiteService;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,9 +27,6 @@ public class PageParserServiceImpl implements PageParserService {
     @Autowired
     private SiteService siteService;
 
-//    @Autowired
-//    private SitesList sitesList;
-
     private final List<String> STOP_WORDS = Arrays
             .asList("vk", "pdf", "twitter", "facebook", "instagram", "utm", "JPG",
                     "jpg", "jpeg", "JPEG", "png", "hh", "youtube", "apple", "yandex",
@@ -39,32 +34,12 @@ public class PageParserServiceImpl implements PageParserService {
 
     private final Object object = new Object();
 
-//    // TODO: 16.11.2022 тестовый метод. потом удалить
-//    @Override
-//    public void startIndexing() throws InterruptedException {
-//        List<Site> sites = sitesList.getSites();
-//        /**
-//         * было:
-//         * Optional<SiteEntity> optional = siteService.findByUrl(site.getUrl);
-//         * if(optional.isPresent() {
-//         *      siteService.deleteByUrl(site.getUrl());
-//         *      и дальше сохранял сайти и парсил
-//         * {
-//         */
-//        siteService.deleteAll();
-//        for (Site site : sites) {
-//            SiteEntity siteEntity = siteService.save(site, StatusType.INDEXING);
-//            parsing(siteEntity);
-//            siteService.changeStatus(siteEntity, StatusType.INDEXED);
-//        }
-//    }
-
     @Override
     public Set<PageEntity> parsing(SiteEntity siteEntity) throws InterruptedException {
         Thread.sleep(500);
         Set<PageEntity> pageEntities = new HashSet<>();
         try {
-            var response = PageParserServiceImpl.getResponse(siteEntity.getUrl());
+            var response = getResponse(siteEntity.getUrl());
             Document document = response.parse();
             String content = document.outerHtml();
             int statusCode = response.statusCode();
@@ -103,14 +78,14 @@ public class PageParserServiceImpl implements PageParserService {
                 page.setCode(code);
                 page.setContent(content);
                 page.setSite(siteEntity);
-                pageEntities.add(page);
                 pageService.save(page);
                 siteService.updateTime(siteEntity);
+                pageEntities.add(page);
             }
         }
     }
 
-    private static Connection.Response getResponse(String linkPage) throws IOException {
+    private Connection.Response getResponse(String linkPage) throws IOException {
         Connection.Response response = Jsoup.connect(linkPage)
                 .userAgent("Mozilla/5.0 (Windows; U; WindowsNT5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
                 .referrer("http://google.com")
