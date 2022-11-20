@@ -13,17 +13,11 @@ public class MyRunnableParseService implements Runnable {
     private RecursivePageParserService recursivePageParserService;
     private PageService pageService;
 
-    public MyRunnableParseService(PageParserService pageParserService, SiteEntity siteEntity,
-                                  PageService pageService) {
+    public MyRunnableParseService(PageParserService pageParserService, SiteEntity siteEntity, PageService pageService, String currentUrl) {
         this.pageParserService = pageParserService;
         this.pageService = pageService;
-
         try {
-            recursivePageParserService = new RecursivePageParserService(
-                    pageParserService,
-                    pageService,
-                    pageParserService.parsing(siteEntity),
-                    siteEntity);
+            recursivePageParserService = new RecursivePageParserService(pageParserService, pageService, pageParserService.parsing(siteEntity, currentUrl), siteEntity);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -32,5 +26,6 @@ public class MyRunnableParseService implements Runnable {
     @Override
     public void run() {
         new ForkJoinPool().invoke(recursivePageParserService);
+//        recursivePageParserService.compute();
     }
 }

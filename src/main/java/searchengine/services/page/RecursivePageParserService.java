@@ -1,40 +1,38 @@
 package searchengine.services.page;
 
-import searchengine.model.entity.PageEntity;
 import searchengine.model.entity.SiteEntity;
 
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
-public class RecursivePageParserService extends RecursiveTask<Set<PageEntity>> {
+public class RecursivePageParserService extends RecursiveTask<Set<String>> {
 
     private PageParserService pageParserService;
     private PageService pageService;
     private SiteEntity siteEntity;
-    private Set<PageEntity> pageEntities;
+    private Set<String> urlSet;
 
-    public RecursivePageParserService(PageParserService pageParserService, PageService pageService, Set<PageEntity> pageEntities, SiteEntity siteEntity) {
+    public RecursivePageParserService(PageParserService pageParserService, PageService pageService, Set<String> urlSet, SiteEntity siteEntity) {
         this.pageParserService = pageParserService;
         this.pageService = pageService;
         this.siteEntity = siteEntity;
-        this.pageEntities = pageEntities;
+        this.urlSet = urlSet;
     }
 
     @Override
-    public Set<PageEntity> compute() {
-        Set<PageEntity> entities = new HashSet<>();
+    public Set<String> compute() {
+        Set<String> urls = new HashSet<>();
         try {
             List<RecursivePageParserService> tasks = new ArrayList<>();
-            for (PageEntity entity : pageEntities) {
+            for (String url : urlSet) {
                 RecursivePageParserService task =
-                        new RecursivePageParserService(pageParserService, pageService, pageParserService.parsing(siteEntity), siteEntity);
+                        new RecursivePageParserService(pageParserService, pageService, pageParserService.parsing(siteEntity, url), siteEntity);
                 task.fork();
                 tasks.add(task);
-
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return entities;
+        return urls;
     }
 }

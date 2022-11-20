@@ -34,7 +34,7 @@ public class StarterIndexingImpl implements StartIndexing {
         for (Site site : sites) {
             SiteEntity siteEntity = siteService.save(site, StatusType.INDEXING);
 //            siteService.deleteByUrl(site.getUrl()); не работает
-            Thread thread = new Thread(new MyRunnableParseService(pageParserService, siteEntity, pageService));
+            Thread thread = new Thread(new MyRunnableParseService(pageParserService, siteEntity, pageService, site.getUrl()));
             thread.start();
             siteService.changeStatus(siteEntity, StatusType.INDEXED);
         }

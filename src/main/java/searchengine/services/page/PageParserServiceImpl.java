@@ -35,11 +35,11 @@ public class PageParserServiceImpl implements PageParserService {
     private final Object object = new Object();
 
     @Override
-    public Set<PageEntity> parsing(SiteEntity siteEntity) throws InterruptedException {
-        Thread.sleep(500);
-        Set<PageEntity> pageEntities = new HashSet<>();
+    public Set<String> parsing(SiteEntity siteEntity, String currentUrl) throws InterruptedException {
+        Thread.sleep(150);
+        Set<String> urls = new HashSet<>();
         try {
-            var response = getResponse(siteEntity.getUrl());
+            var response = getResponse(currentUrl);
             Document document = response.parse();
             String content = document.outerHtml();
             int statusCode = response.statusCode();
@@ -50,11 +50,14 @@ public class PageParserServiceImpl implements PageParserService {
                 boolean condition2 = (url.contains(document.location()));
                 boolean condition3 = STOP_WORDS.stream().noneMatch(url::contains);
                 if (condition1 && condition3) {
-                    addInsertPageToDB(pageEntities, url, statusCode, content, siteEntity);
+                    addInsertPageToDB(url, statusCode, content, siteEntity);
+                    url = siteEntity.getUrl() + url;
+                    urls.add(url);
                 }
                 if (condition2 && condition3) {
+                    urls.add(url);
                     url = getDesiredGroupOfURL(url, 5);
-                    addInsertPageToDB(pageEntities, url, statusCode, content, siteEntity);
+                    addInsertPageToDB(url, statusCode, content, siteEntity);
                 }
             }
         } catch (HttpStatusException e) {
@@ -66,10 +69,10 @@ public class PageParserServiceImpl implements PageParserService {
             siteService.updateLastError(siteEntity, e.getMessage());
             throw new RuntimeException();
         }
-        return pageEntities;
+        return urls;
     }
 
-    private void addInsertPageToDB(Set<PageEntity> pageEntities, String url, int code, String content, SiteEntity siteEntity) {
+    private void addInsertPageToDB(String url, int code, String content, SiteEntity siteEntity) {
         synchronized (object) {
             Optional<PageEntity> optional = pageService.findByPath(url);
             if (optional.isEmpty()) {
@@ -80,7 +83,6 @@ public class PageParserServiceImpl implements PageParserService {
                 page.setSite(siteEntity);
                 pageService.save(page);
                 siteService.updateTime(siteEntity);
-                pageEntities.add(page);
             }
         }
     }
