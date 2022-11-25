@@ -33,7 +33,7 @@ public class SiteEntity {
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "site", cascade = CascadeType.ALL)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private List<PageEntity> pages;
+//    @OneToMany(mappedBy = "site", cascade = CascadeType.REMOVE)
+//    @OnDelete(action = OnDeleteAction.CASCADE)
+//    private List<PageEntity> pages;
 }

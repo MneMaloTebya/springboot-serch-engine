@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import searchengine.dto.statistics.StatisticsResponse;
-import searchengine.services.StartIndexing;
+import searchengine.services.indexing.IndexingService;
 import searchengine.services.StatisticsService;
 
 import java.util.HashMap;
@@ -20,7 +20,7 @@ public class ApiController {
     private StatisticsService statisticsService;
 
     @Autowired
-    private StartIndexing startIndexing;
+    private IndexingService indexingService;
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
@@ -30,7 +30,7 @@ public class ApiController {
     @GetMapping("/startIndexing")
     public Map<String, String> startIndexing() {
         Map<String, String> response = new HashMap<>();
-        startIndexing.startIndexing();
+        indexingService.startIndexingAll();
         response.put("ok", "ok");
         return response;
     }

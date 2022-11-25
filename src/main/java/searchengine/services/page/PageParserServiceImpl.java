@@ -1,16 +1,17 @@
 package searchengine.services.page;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import searchengine.model.entity.PageEntity;
 import searchengine.model.entity.SiteEntity;
 import searchengine.model.entity.StatusType;
+import searchengine.services.indexing.IndexingServiceImpl;
 import searchengine.services.site.SiteService;
 
 import java.io.IOException;
@@ -18,14 +19,12 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Service
 public class PageParserServiceImpl implements PageParserService {
 
-    @Autowired
-    private PageService pageService;
+    private static final Log log = LogFactory.getLog(IndexingServiceImpl.class);
 
-    @Autowired
-    private SiteService siteService;
+    private final PageService pageService;
+    private final SiteService siteService;
 
     private final List<String> STOP_WORDS = Arrays
             .asList("vk", "pdf", "twitter", "facebook", "instagram", "utm", "JPG",
@@ -34,16 +33,25 @@ public class PageParserServiceImpl implements PageParserService {
 
     private final Object object = new Object();
 
+    public PageParserServiceImpl(PageService pageService, SiteService siteService) {
+        this.pageService = pageService;
+        this.siteService = siteService;
+    }
+
     @Override
     public Set<String> parsing(SiteEntity siteEntity, String currentUrl) throws InterruptedException {
         Thread.sleep(150);
+        log.info("PageParserService: старт парсинга страницы " + currentUrl);
+
         Set<String> urls = new HashSet<>();
+
         try {
             var response = getResponse(currentUrl);
             Document document = response.parse();
             String content = document.outerHtml();
             int statusCode = response.statusCode();
             Elements elements = document.select("a");
+
             for (Element element : elements) {
                 String url = element.attr("href");
                 boolean condition1 = url.startsWith("/");
@@ -52,23 +60,30 @@ public class PageParserServiceImpl implements PageParserService {
                 if (condition1 && condition3) {
                     addInsertPageToDB(url, statusCode, content, siteEntity);
                     url = siteEntity.getUrl() + url;
-                    urls.add(url);
                 }
+
                 if (condition2 && condition3) {
-                    urls.add(url);
+                    if (!url.equals(currentUrl)) {
+                        urls.add(url);
+                    }
                     url = getDesiredGroupOfURL(url, 5);
                     addInsertPageToDB(url, statusCode, content, siteEntity);
                 }
             }
         } catch (HttpStatusException e) {
+            log.error("Ошибка при парсинге сайта: ", e);
             siteService.changeStatus(siteEntity, StatusType.FAILED);
             siteService.updateLastError(siteEntity, e.getMessage());
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         } catch (IOException e) {
+            log.error("Ошибка при парсинге сайта: ", e);
             siteService.changeStatus(siteEntity, StatusType.FAILED);
             siteService.updateLastError(siteEntity, e.getMessage());
-            throw new RuntimeException();
+           // throw new RuntimeException();
         }
+
+        log.info("PageParserService: завершен парсинг страницы  " + currentUrl + ", урлы на странице: " + urls);
+
         return urls;
     }
 
@@ -80,9 +95,10 @@ public class PageParserServiceImpl implements PageParserService {
                 page.setPath(url);
                 page.setCode(code);
                 page.setContent(content);
-                page.setSite(siteEntity);
+                page.setSiteId(siteEntity.getId());
                 pageService.save(page);
-                siteService.updateTime(siteEntity);
+                //TODO
+                //siteService.updateTime(siteEntity);
             }
         }
     }

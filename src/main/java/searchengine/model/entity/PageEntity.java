@@ -12,9 +12,12 @@ public class PageEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "site_id", nullable = false)
-    private SiteEntity site;
+//    @ManyToOne(cascade = CascadeType.REMOVE)
+//    @JoinColumn(name = "site_id", nullable = false)
+//    private SiteEntity site;
+
+    @Column(name = "site_id")
+    private int siteId;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String path;

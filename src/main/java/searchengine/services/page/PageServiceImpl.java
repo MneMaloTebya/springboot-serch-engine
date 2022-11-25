@@ -22,4 +22,9 @@ public class PageServiceImpl implements PageService{
     public Optional<PageEntity> findByPath(String path) {
         return pageRepository.findPageByPath(path);
     }
+
+    @Override
+    public void deleteBySiteId(int siteId) {
+        pageRepository.deleteBySiteId(siteId);
+    }
 }
