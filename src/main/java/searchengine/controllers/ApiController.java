@@ -6,11 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import searchengine.dto.statistics.StatisticsResponse;
+import searchengine.message.MyMessage;
 import searchengine.services.indexing.IndexingService;
 import searchengine.services.StatisticsService;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -28,10 +26,23 @@ public class ApiController {
     }
 
     @GetMapping("/startIndexing")
-    public Map<String, String> startIndexing() {
-        Map<String, String> response = new HashMap<>();
-        indexingService.startIndexingAll();
-        response.put("ok", "ok");
-        return response;
+    public String startIndexing() {
+        MyMessage message = new MyMessage(true);
+        if (indexingService.isStarted()) {
+            message = new MyMessage(false, "Индексация уже запущена.");
+        }
+        else {
+            indexingService.startIndexingAll();
+        }
+        return message.toString();
+    }
+
+    @GetMapping("/stopIndexing")
+    public String stopIndexing() {
+        indexingService.stopIndexingAll();
+        /**
+         * доработать метод. добавить респонс
+         */
+        return null;
     }
 }

@@ -7,7 +7,6 @@ import searchengine.model.entity.SiteEntity;
 import searchengine.model.entity.StatusType;
 import searchengine.services.page.PageService;
 import searchengine.services.site.SiteService;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -18,6 +17,7 @@ public class IndexingServiceImpl implements IndexingService {
     private final SiteService siteService;
     private final PageService pageService;
     private final ThreadPoolExecutor executor;
+    private boolean isStarted = false;
 
     public IndexingServiceImpl(Config config, SiteService siteService, PageService pageService) {
         this.config = config;
@@ -30,6 +30,7 @@ public class IndexingServiceImpl implements IndexingService {
     public void startIndexingAll() {
         for (Site site : config.getSites()) {
             startSiteIndexing(site);
+            isStarted = true;
         }
     }
 
@@ -39,4 +40,18 @@ public class IndexingServiceImpl implements IndexingService {
         SiteIndexingThread siteIndexingThread = new SiteIndexingThread(pageService, siteService, siteEntity, site.getUrl());
         executor.execute(siteIndexingThread);
     }
+
+    @Override
+    public boolean isStarted() {
+        return isStarted;
+    }
+
+    @Override
+    public void stopIndexingAll() {
+        /**
+         * на этом этапе я должен понять с каким сайтом работает мой поток и присвоить ему статус FAILED и прописать текст ошибки
+         */
+        executor.shutdownNow();
+    }
+
 }

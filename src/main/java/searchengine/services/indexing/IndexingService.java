@@ -9,4 +9,11 @@ public interface IndexingService {
      * Запустить индексацию всех сайтов
      */
     void startIndexingAll();
+
+    boolean isStarted();
+
+    /**
+     * Остановить индексацию всех сайтов
+     */
+    void stopIndexingAll();
 }

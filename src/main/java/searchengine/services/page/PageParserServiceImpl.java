@@ -97,8 +97,6 @@ public class PageParserServiceImpl implements PageParserService {
                 page.setContent(content);
                 page.setSiteId(siteEntity.getId());
                 pageService.save(page);
-                //TODO
-                //siteService.updateTime(siteEntity);
             }
         }
     }
