@@ -13,7 +13,7 @@ import searchengine.services.site.SiteService;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 
-public class SiteIndexingThread extends Thread {
+public class SiteIndexingThread implements Runnable {
 
     private static final Log log = LogFactory.getLog(IndexingServiceImpl.class);
 

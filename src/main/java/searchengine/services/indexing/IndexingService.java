@@ -1,5 +1,7 @@
 package searchengine.services.indexing;
 
+import searchengine.dto.indexing.StartIndexingResponse;
+
 /**
  * Сервис для индексации сайтов
  */
@@ -8,9 +10,8 @@ public interface IndexingService {
     /**
      * Запустить индексацию всех сайтов
      */
-    void startIndexingAll();
+    StartIndexingResponse startIndexingAll();
 
-    boolean isStarted();
 
     /**
      * Остановить индексацию всех сайтов

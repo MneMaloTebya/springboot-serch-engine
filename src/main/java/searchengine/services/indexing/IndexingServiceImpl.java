@@ -3,6 +3,9 @@ package searchengine.services.indexing;
 import org.springframework.stereotype.Service;
 import searchengine.config.Site;
 import searchengine.config.Config;
+import searchengine.dto.indexing.ErrorStartIndexingResponse;
+import searchengine.dto.indexing.OkStartIndexingResponse;
+import searchengine.dto.indexing.StartIndexingResponse;
 import searchengine.model.entity.SiteEntity;
 import searchengine.model.entity.StatusType;
 import searchengine.services.page.PageService;
@@ -17,7 +20,6 @@ public class IndexingServiceImpl implements IndexingService {
     private final SiteService siteService;
     private final PageService pageService;
     private final ThreadPoolExecutor executor;
-    private boolean isStarted = false;
 
     public IndexingServiceImpl(Config config, SiteService siteService, PageService pageService) {
         this.config = config;
@@ -26,12 +28,24 @@ public class IndexingServiceImpl implements IndexingService {
         this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(config.getSites().size());
     }
 
+    // TODO: 03.12.2022 возвращает 406
     @Override
-    public void startIndexingAll() {
+    public StartIndexingResponse startIndexingAll() {
+        // TODO: 03.12.2022 нужно проверить запущены ли потоки. если нет, то запустить индексацию и вернуть OkStartIndexingResponse. если да, то вернуть ErrorIndexingResponse
+
+        if (executor.isTerminated()) {
+            ErrorStartIndexingResponse response = new ErrorStartIndexingResponse();
+            response.setResult(false);
+            response.setError("Индексация уже запущена");
+            return response;
+        }
+
         for (Site site : config.getSites()) {
             startSiteIndexing(site);
-            isStarted = true;
         }
+        StartIndexingResponse response = new StartIndexingResponse();
+        response.setResult(true);
+        return response;
     }
 
     private void startSiteIndexing(Site site) {
@@ -39,11 +53,6 @@ public class IndexingServiceImpl implements IndexingService {
         SiteEntity siteEntity = siteService.save(site, StatusType.INDEXING);
         SiteIndexingThread siteIndexingThread = new SiteIndexingThread(pageService, siteService, siteEntity, site.getUrl());
         executor.execute(siteIndexingThread);
-    }
-
-    @Override
-    public boolean isStarted() {
-        return isStarted;
     }
 
     @Override

@@ -57,9 +57,14 @@ public class PageParserServiceImpl implements PageParserService {
                 boolean condition1 = url.startsWith("/");
                 boolean condition2 = (url.contains(document.location()));
                 boolean condition3 = STOP_WORDS.stream().noneMatch(url::contains);
+
                 if (condition1 && condition3) {
+//                    if (!(siteEntity.getUrl() + url).equals(siteEntity.getUrl() + url)) {
+//                        urls.add(siteEntity.getUrl() + url);
+//                    }
                     addInsertPageToDB(url, statusCode, content, siteEntity);
-                    url = siteEntity.getUrl() + url;
+//                    url = siteEntity.getUrl() + url;
+//                    urls.add(url);
                 }
 
                 if (condition2 && condition3) {
@@ -72,14 +77,14 @@ public class PageParserServiceImpl implements PageParserService {
             }
         } catch (HttpStatusException e) {
             log.error("Ошибка при парсинге сайта: ", e);
-            siteService.changeStatus(siteEntity, StatusType.FAILED);
+//            siteService.changeStatus(siteEntity, StatusType.FAILED);
             siteService.updateLastError(siteEntity, e.getMessage());
             return Collections.emptySet();
         } catch (IOException e) {
             log.error("Ошибка при парсинге сайта: ", e);
-            siteService.changeStatus(siteEntity, StatusType.FAILED);
+//            siteService.changeStatus(siteEntity, StatusType.FAILED);
             siteService.updateLastError(siteEntity, e.getMessage());
-           // throw new RuntimeException();
+            // throw new RuntimeException();
         }
 
         log.info("PageParserService: завершен парсинг страницы  " + currentUrl + ", урлы на странице: " + urls);
