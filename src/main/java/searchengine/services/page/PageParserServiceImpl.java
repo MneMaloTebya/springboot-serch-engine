@@ -59,12 +59,10 @@ public class PageParserServiceImpl implements PageParserService {
                 boolean condition3 = STOP_WORDS.stream().noneMatch(url::contains);
 
                 if (condition1 && condition3) {
-//                    if (!(siteEntity.getUrl() + url).equals(siteEntity.getUrl() + url)) {
+//                    if (!(siteEntity.getUrl() + url).equals(currentUrl)) {
 //                        urls.add(siteEntity.getUrl() + url);
 //                    }
                     addInsertPageToDB(url, statusCode, content, siteEntity);
-//                    url = siteEntity.getUrl() + url;
-//                    urls.add(url);
                 }
 
                 if (condition2 && condition3) {

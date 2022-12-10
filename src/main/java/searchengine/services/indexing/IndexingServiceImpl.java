@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import searchengine.config.Site;
 import searchengine.config.Config;
 import searchengine.dto.indexing.ErrorStartIndexingResponse;
-import searchengine.dto.indexing.OkStartIndexingResponse;
 import searchengine.dto.indexing.StartIndexingResponse;
 import searchengine.model.entity.SiteEntity;
 import searchengine.model.entity.StatusType;
@@ -28,12 +27,10 @@ public class IndexingServiceImpl implements IndexingService {
         this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(config.getSites().size());
     }
 
-    // TODO: 03.12.2022 возвращает 406
     @Override
     public StartIndexingResponse startIndexingAll() {
-        // TODO: 03.12.2022 нужно проверить запущены ли потоки. если нет, то запустить индексацию и вернуть OkStartIndexingResponse. если да, то вернуть ErrorIndexingResponse
 
-        if (executor.isTerminated()) {
+        if (executor.getActiveCount() > 0) {
             ErrorStartIndexingResponse response = new ErrorStartIndexingResponse();
             response.setResult(false);
             response.setError("Индексация уже запущена");
