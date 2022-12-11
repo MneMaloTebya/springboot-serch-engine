@@ -34,11 +34,6 @@ public class SiteServiceImpl implements SiteService {
     }
 
     @Override
-    public void deleteAll() {
-        siteRepository.deleteAll();
-    }
-
-    @Override
     public Optional<SiteEntity> findByUrl(String url) {
         return siteRepository.findByUrl(url);
     }
@@ -57,12 +52,6 @@ public class SiteServiceImpl implements SiteService {
     @Override
     public SiteEntity changeStatus(SiteEntity siteEntity, StatusType type) {
         siteEntity.setStatusType(type);
-        siteEntity.setStatusTime(LocalDateTime.now());
-        return siteRepository.save(siteEntity);
-    }
-
-    @Override
-    public SiteEntity updateTime(SiteEntity siteEntity) {
         siteEntity.setStatusTime(LocalDateTime.now());
         return siteRepository.save(siteEntity);
     }

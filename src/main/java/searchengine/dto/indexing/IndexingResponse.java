@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class StartIndexingResponse {
+public class IndexingResponse {
     private boolean result;
 
     public void setResult(boolean result) {

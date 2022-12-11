@@ -75,18 +75,13 @@ public class PageParserServiceImpl implements PageParserService {
             }
         } catch (HttpStatusException e) {
             log.error("Ошибка при парсинге сайта: ", e);
-//            siteService.changeStatus(siteEntity, StatusType.FAILED);
-            siteService.updateLastError(siteEntity, e.getMessage());
             return Collections.emptySet();
         } catch (IOException e) {
             log.error("Ошибка при парсинге сайта: ", e);
-//            siteService.changeStatus(siteEntity, StatusType.FAILED);
+            siteService.changeStatus(siteEntity, StatusType.FAILED);
             siteService.updateLastError(siteEntity, e.getMessage());
-            // throw new RuntimeException();
         }
-
         log.info("PageParserService: завершен парсинг страницы  " + currentUrl + ", урлы на странице: " + urls);
-
         return urls;
     }
 

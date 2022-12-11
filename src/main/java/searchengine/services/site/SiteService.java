@@ -10,15 +10,11 @@ public interface SiteService {
 
     void deleteByUrl(String url);
 
-    void deleteAll();
-
     Optional<SiteEntity> findByUrl(String url);
 
     SiteEntity save(Site site, StatusType type);
 
     SiteEntity changeStatus(SiteEntity siteEntity, StatusType type);
-
-    SiteEntity updateTime(SiteEntity siteEntity);
 
     SiteEntity updateLastError(SiteEntity siteEntity, String message);
 }

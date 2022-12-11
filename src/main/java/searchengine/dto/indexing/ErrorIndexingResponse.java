@@ -3,14 +3,14 @@ package searchengine.dto.indexing;
 import lombok.Data;
 
 @Data
-public class ErrorStartIndexingResponse extends StartIndexingResponse {
+public class ErrorIndexingResponse extends IndexingResponse {
     private String error;
 
-    public ErrorStartIndexingResponse() {
+    public ErrorIndexingResponse() {
 
     }
 
-    public ErrorStartIndexingResponse(String error) {
+    public ErrorIndexingResponse(String error) {
         super(false);
         this.error = error;
     }

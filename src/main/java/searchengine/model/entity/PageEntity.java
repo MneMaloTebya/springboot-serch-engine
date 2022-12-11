@@ -12,10 +12,6 @@ public class PageEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-//    @ManyToOne(cascade = CascadeType.REMOVE)
-//    @JoinColumn(name = "site_id", nullable = false)
-//    private SiteEntity site;
-
     @Column(name = "site_id")
     private int siteId;
 
