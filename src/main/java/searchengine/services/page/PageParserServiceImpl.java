@@ -58,20 +58,30 @@ public class PageParserServiceImpl implements PageParserService {
                 boolean condition2 = (url.contains(document.location()));
                 boolean condition3 = STOP_WORDS.stream().noneMatch(url::contains);
 
-                if (condition1 && condition3) {
-//                    if (!(siteEntity.getUrl() + url).equals(currentUrl)) {
-//                        urls.add(siteEntity.getUrl() + url);
-//                    }
-                    addInsertPageToDB(url, statusCode, content, siteEntity);
+                if (!url.equals(currentUrl) && condition3) {
+                    if (condition1) {
+                        addInsertPageToDB(url, statusCode, content, siteEntity);
+                        urls.add(siteEntity.getUrl() + url);
+                    }
+                    if (condition2) {
+                        urls.add(url);
+                        url = getDesiredGroupOfURL(url, 5);
+                        addInsertPageToDB(url, statusCode, content, siteEntity);
+                    }
                 }
 
-                if (condition2 && condition3) {
-                    if (!url.equals(currentUrl)) {
-                        urls.add(url);
-                    }
-                    url = getDesiredGroupOfURL(url, 5);
-                    addInsertPageToDB(url, statusCode, content, siteEntity);
-                }
+                //todo +- рабочий вариант
+//                if (condition1 && condition3) {
+//                    addInsertPageToDB(url, statusCode, content, siteEntity);
+//                }
+//
+//                if (condition2 && condition3) {
+//                    if (!url.equals(currentUrl)) {
+//                        urls.add(url);
+//                    }
+//                    url = getDesiredGroupOfURL(url, 5);
+//                    addInsertPageToDB(url, statusCode, content, siteEntity);
+//                }
             }
         } catch (HttpStatusException e) {
             log.error("Ошибка при парсинге сайта: ", e);
